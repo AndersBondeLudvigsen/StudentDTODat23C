@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class StudentService {
@@ -21,29 +22,46 @@ public class StudentService {
     }
 
     public List<StudentResponseDTO> getAllStudents() {
-        List<Student> students = studentRepository.findAll();
-        List<StudentResponseDTO> studentResponseDTOs = new ArrayList<>();
+//        List<Student> students = studentRepository.findAll();
+//        List<StudentResponseDTO> studentResponseDTOs = new ArrayList<>();
+//
+//        // Using a for-loop to convert each Student to a StudentResponseDTO
+//        for (Student student : students) {
+//            StudentResponseDTO studentResponseDTO = new StudentResponseDTO(student.getId(), student.getName(), student.getBornDate(), student.getBornTime());
+//            studentResponseDTOs.add(studentResponseDTO);
+//        }
 
-        // Using a for-loop to convert each Student to a StudentResponseDTO
-        for (Student student : students) {
-            StudentResponseDTO studentResponseDTO = new StudentResponseDTO(student.getId(), student.getName(), student.getBornDate(), student.getBornTime());
-            studentResponseDTOs.add(studentResponseDTO);
-        }
+       // return studentResponseDTOs;
+        return studentRepository.findAll().stream()
+                .map(student -> new StudentResponseDTO(
+                        student.getId(),
+                        student.getName(),
+                        student.getBornDate(),
+                        student.getBornTime()))
+                .toList();
+        //.collect(Collectors.toList());
 
-        return studentResponseDTOs;
     }
 
     public StudentResponseDTO getStudentById(Long id) {
-        Optional<Student> optionalStudent = studentRepository.findById(id);
+//        Optional<Student> optionalStudent = studentRepository.findById(id);
+//
+//        // Throw RuntimeException if student is not found
+//        if (optionalStudent.isEmpty()) {
+//            throw new RuntimeException("Student not found with id " + id);
+//        }
+//
+//        Student student = optionalStudent.get();
+//
+//        return new StudentResponseDTO(student.getId(), student.getName(), student.getBornDate(), student.getBornTime());
 
-        // Throw RuntimeException if student is not found
-        if (optionalStudent.isEmpty()) {
-            throw new RuntimeException("Student not found with id " + id);
-        }
-
-        Student student = optionalStudent.get();
-
-        return new StudentResponseDTO(student.getId(), student.getName(), student.getBornDate(), student.getBornTime());
+        return studentRepository.findById(id)
+                .map(student -> new StudentResponseDTO(
+                        student.getId(),
+                        student.getName(),
+                        student.getBornDate(),
+                        student.getBornTime()))
+                .orElseThrow(()-> new RuntimeException("student with  id " + id + " not found"));
 
     }
 
@@ -64,6 +82,7 @@ public class StudentService {
     }
 
     public StudentResponseDTO updateStudent(Long id, StudentRequestDTO studentRequestDTO) {
+       /*
         Optional<Student> optionalStudent = studentRepository.findById(id);
         // Throw RuntimeException if student is not found
         if (optionalStudent.isEmpty()) {
@@ -72,6 +91,11 @@ public class StudentService {
 
         Student student = optionalStudent.get();
 
+
+*/
+        Student student = studentRepository.findById(id)
+                        .orElseThrow(()-> new RuntimeException("student with  id " + id + " not found"));
+
         student.setName(studentRequestDTO.name());
         student.setPassword(studentRequestDTO.password());
         student.setBornDate(studentRequestDTO.bornDate());
@@ -79,6 +103,8 @@ public class StudentService {
 
         Student studentResponse = studentRepository.save(student);
         return new StudentResponseDTO(studentResponse.getId(), studentResponse.getName(), studentResponse.getBornDate(), studentResponse.getBornTime());
+
+
     }
 
     public void deleteStudent(Long id) {
